@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
@@ -10,18 +11,17 @@ export const incrementAsync = createAsyncThunk(
   'posts/addPost',
   async (post, { rejectWithValue }) => {
     try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
-        method: 'POST',
-        body: JSON.stringify(post),
-        header: {
-          'Content-Type': 'application/json',
-        },
-      })
-      const data = await response.json()
-      return data
+      return await axios
+        .post('https://jsonplaceholder.typicode.com/posts', {
+          post,
+        })
+        .then((res) => {
+          return res.data
+        })
     } catch (err) {
-      // You can choose to use the message attached to err or write a custom error
-      return rejectWithValue('Opps there seems to be an error')
+      // You can choose to use the message attached to err or write a custom erroraler()
+      // return rejectWithValue('Opps there seems to be an error') willl accetp in action.payload
+      return rejectWithValue()
     }
   },
 )
@@ -50,9 +50,10 @@ export const counterSlice = createSlice({
       })
       .addCase(incrementAsync.fulfilled, (state, action) => {
         state.status = 'idle'
-        console.log('payload', action)
-        // state.value += action.payload
-        state.value += 1
+        state.value += action.payload.post
+      })
+      .addCase(incrementAsync.rejected, (state) => {
+        state.status = 'rejected'
       })
   },
 })
