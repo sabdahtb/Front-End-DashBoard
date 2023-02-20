@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { setCookie } from '~/utils/cookie'
 
 const initialState = {
-  token: '',
+  userName: '',
   status: '',
 }
 
@@ -18,16 +19,24 @@ export const login = createAsyncThunk('api/auth/login', async (user, { rejectWit
 
 // Redux Toolkit slice
 export const authSlice = createSlice({
-  name: 'counter',
+  name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    resetUser: (state) => {
+      state.userName = initialState.userName
+      state.status = initialState.status
+    },
+  },
 
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {
         state.status = 'loading'
       })
-      .addCase(login.fulfilled, (state) => {
+      .addCase(login.fulfilled, (state, action) => {
+        const data = action.payload.data
+        setCookie('token', data.token)
+        state.userName = data.name
         state.status = 'idle'
       })
       .addCase(login.rejected, (state) => {
@@ -37,3 +46,4 @@ export const authSlice = createSlice({
 })
 
 export default authSlice.reducer
+export const { resetUser } = authSlice.actions
